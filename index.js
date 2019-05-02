@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+app.use(express.urlencoded({extended:true}));
+
 // when get request comes in, sent back all the messages
 const db = [
     'Welcome to the ChatApp',
@@ -12,5 +14,9 @@ app.get('/', (req, res) => {
 });
 
 // when post request comes in, add message to arry of messages
+app.post('/', (req, res) =>{
+    db.push(req.body.message);
+    res.json(db);
+});
 
 app.listen(3000, ()=> {console.log("Running on port 3000");});
