@@ -1,20 +1,39 @@
+const http = require('http');
 const express = require('express');
 const app = express();
+const server = http.createServer(app);
+const WebSocket = require('ws');
+const wss = new WebSocket.Server({
+    server,
+    path: '/chat'
+});
 
 app.use(express.urlencoded({extended:true}));
 app.use(function(req, res, next) {
-    // res.header("Access-Control-Allow-Origin", "*");
-    // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 
+wss.on('connection', (socket) => {
+    console.log('oh, hello.');
+    socket.send(JSON.stringify(db));
+
+    socket.on('message', (data)=> {
+        // console.log(data);
+        db.push(data);
+        // socket.send(data);
+        wss.clients.forEach((client) => {
+            if(client.readyState === WebSocket.OPEN){
+                client.send(JSON.stringify(data));
+            }
+        });
+    });
+});
 
 
 // when get request comes in, sent back all the messages
 const db = [
     'Welcome to the ChatApp',
-    '🐈',
-    'Okay.'
+    '🐈'
 ];
 app.get('/api', (req, res) => {
     res.json(db);
@@ -27,4 +46,4 @@ app.post('/api', (req, res) =>{
     res.json(db);
 });
 
-app.listen(3000, ()=> {console.log("Running on port 3000");});
+server.listen(3000, ()=> {console.log("Running on port 3000");});
